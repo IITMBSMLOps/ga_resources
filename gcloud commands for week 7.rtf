@@ -1,0 +1,124 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue-Bold;\f1\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid1\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat3\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid101\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat10\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid201\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid3}
+{\list\listtemplateid4\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat12\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid301\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid4}
+{\list\listtemplateid5\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat15\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid401\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid5}
+{\list\listtemplateid6\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat16\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid501\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid6}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}{\listoverride\listid5\listoverridecount0\ls5}{\listoverride\listid6\listoverridecount0\ls6}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\partightenfactor0
+
+\f0\b\fs50 \cf0 Logging & Telemetry demo\
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f1\b0\fs38 \cf0 #teaching \
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 {\listtext	0.	}Get the app coded for emitting telemetry and logs, and handling exceptions properly\
+{\listtext	0.	}gcloud services enable container.googleapis.com \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0     logging.googleapis.com \\\
+    monitoring.googleapis.com \\\
+    {\field{\*\fldinst{HYPERLINK "http://cloudtrace.googleapis.com"}}{\fldrslt cloudtrace.googleapis.com}}\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls2\ilvl0\cf0 {\listtext	0.	}Dockerfile & requirements.txt\
+{\listtext	0.	}docker build -t demo_log .\
+{\listtext	0.	}Tag the image - docker tag demo_log us-central1-docker.pkg.dev/dulcet-bastion-452612-v4/my-repo/demo_log:latest\
+{\listtext	0.	}Push the image - docker push us-central1-docker.pkg.dev/dulcet-bastion-452612-v4/my-repo/demo_log:latest\
+{\listtext	0.	}Manifests - deployment, service, hpa
+\fs56 \
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls2\ilvl0
+\fs36 \cf0 {\listtext	0.	}Create GKE cluster - demo-log-ml-cluster - gcloud container clusters create demo-log-ml-cluster   --zone=us-central1-a   --num-nodes=3   --workload-pool=$(gcloud config get-value project).svc.id.goog   --logging=SYSTEM,WORKLOAD   --monitoring=SYSTEM\
+{\listtext	0.	}gcloud iam service-accounts create telemetry-access \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0     --display-name "Access for GKE ML service"\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls3\ilvl0\cf0 {\listtext	0.	}PROJECT_ID=$(gcloud config get-value project)\
+{\listtext	0.	}gcloud projects add-iam-policy-binding $PROJECT_ID \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0   --member="serviceAccount:telemetry-access@$PROJECT_ID.iam.gserviceaccount.com" \\\
+  --role="roles/logging.logWriter"\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls4\ilvl0\cf0 {\listtext	0.	}gcloud projects add-iam-policy-binding $PROJECT_ID \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0   --member="serviceAccount:telemetry-access@$PROJECT_ID.iam.gserviceaccount.com" \\\
+  --role="roles/cloudtrace.agent"\
+\
+Each time a GKE cluster is created, do these 3 steps:\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls5\ilvl0\cf0 {\listtext	0.	}kubectl create serviceaccount telemetry-access --namespace default\
+{\listtext	0.	}kubectl annotate serviceaccount telemetry-access \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0   --namespace default \\\
+  iam.gke.io/gcp-service-account=telemetry-access@$PROJECT_ID.iam.gserviceaccount.com\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls6\ilvl0\cf0 {\listtext	0.	}gcloud iam service-accounts add-iam-policy-binding telemetry-access@$PROJECT_ID.iam.gserviceaccount.com \\\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0   --role roles/iam.workloadIdentityUser \\\
+  --member "serviceAccount:$PROJECT_ID.svc.id.goog[default/telemetry-access]"\
+\
+gcloud container clusters get-credentials demo-log-ml-cluster \\\
+  --zone=us-central1-a\
+\
+On workbench compute engine instance, this command might throw an error about auth plugin not being installed. In which case, do the below steps:\
+a. sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin\
+b. gcloud config set container/use_application_default_credentials true\
+\
+To confirm the telemetry-access serviceaccount exists,\
+a. kubectl get serviceaccount telemetry-access -n default\
+b. kubectl describe serviceaccount telemetry-access -n default - check for annotation exists\
+c. gcloud iam service-accounts get-iam-policy {\field{\*\fldinst{HYPERLINK "mailto:telemetry-access@my-ml-project.iam.gserviceaccount.com"}}{\fldrslt telemetry-access@$PROJECT_ID.}}{\field{\*\fldinst{HYPERLINK "http://iam.gserviceaccount.com"}}{\fldrslt iam.gserviceaccount.com}} - check IAM policy includes it\
+\
+\
+kubectl apply -f deployment.yaml\
+kubectl apply -f service.yaml\
+kubectl apply -f hpa.yaml\
+\
+To get the exposed service info:\
+kubectl get service demo-log-ml-service\
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+{\field{\*\fldinst{HYPERLINK "http://34.171.149.251/"}}{\fldrslt 
+\fs26 \cf0 \ul \ulc0 34.171.149.251:80\ulnone  }}
+\fs26 \
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\fs36 \cf0 \
+Ensure the port is open in vpc firewall\
+\
+To forcefully restart and  pull latest images, use\
+kubectl rollout restart deployment demo-log-ml-service\
+\
+To check status of restart:\uc0\u8232 kubectl rollout status deployment demo-log-ml-service\
+Check age of pods:\
+kubectl get pods -l app=demo-log-ml-service \
+Check image being used:\
+kubectl describe pod <pod-name>\
+\
+To check if the status of probes in a pod:\
+kubectl describe pod demo-log-ml-service-56c6f678d4-8sv9f\
+\
+If all probes work fine, the deployment status should say OK and not CrashLoopBackOff.\
+\
+curl -X POST http://{\field{\*\fldinst{HYPERLINK "http://34.171.149.251/"}}{\fldrslt 
+\fs26 \ul 34.171.149.251:80}}/predict   -H "Content-Type: application/json"   -d '\{"feature1": 1.0, "feature2": 2.0\}'\
+\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 \'97 \
+Perf run:\
+sudo apt-get install wrk\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 wrk -t4 -c100 -d30s --latency -s post.lua http://34.171.149.251:80/predict\
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 \'97\
+}
